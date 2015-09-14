@@ -1,5 +1,5 @@
 {
-    "name": "commerceguys/guzzle-oauth2-plugin",
+    "name": "frankkessler/guzzle-oauth2-plugin",
     "description": "An OAuth2 plugin (subscriber) for Guzzle",
     "license": "MIT",
     "require": {
