@@ -2,7 +2,7 @@
 
 namespace CommerceGuys\Guzzle\Oauth2\GrantType;
 
-interface RefreshTokenGrantTypeInterface extends GrantTypeInterface
+interface RefreshTokenGrantTypeInterface
 {
 
     /**

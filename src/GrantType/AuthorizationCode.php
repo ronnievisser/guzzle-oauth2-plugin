@@ -9,7 +9,7 @@ namespace CommerceGuys\Guzzle\Oauth2\GrantType;
  */
 class AuthorizationCode extends GrantTypeBase
 {
-    protected $grantType = 'authorization_code';
+    public $grantType = 'authorization_code';
 
     /**
      * @inheritdoc

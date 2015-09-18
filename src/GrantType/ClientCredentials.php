@@ -9,5 +9,5 @@ namespace CommerceGuys\Guzzle\Oauth2\GrantType;
  */
 class ClientCredentials extends GrantTypeBase
 {
-    protected $grantType = 'client_credentials';
+    public $grantType = 'client_credentials';
 }

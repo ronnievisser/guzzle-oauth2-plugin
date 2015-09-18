@@ -14,15 +14,15 @@ use InvalidArgumentException;
  */
 class JwtBearer extends GrantTypeBase
 {
-    protected $grantType = 'urn:ietf:params:oauth:grant-type:jwt-bearer';
+    public $grantType = 'urn:ietf:params:oauth:grant-type:jwt-bearer';
 
     /**
      * @param ClientInterface $client
      * @param array           $config
      */
-    public function __construct(ClientInterface $client, array $config = [])
+    public function __construct(array $config = [])
     {
-        parent::__construct($client, $config);
+        parent::__construct($config);
 
         if (!($this->config->get('private_key') instanceof SplFileObject)) {
             throw new InvalidArgumentException('private_key needs to be instance of SplFileObject');

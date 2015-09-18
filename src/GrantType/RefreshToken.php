@@ -9,7 +9,7 @@ namespace CommerceGuys\Guzzle\Oauth2\GrantType;
  */
 class RefreshToken extends GrantTypeBase implements RefreshTokenGrantTypeInterface
 {
-    protected $grantType = 'refresh_token';
+    public $grantType = 'refresh_token';
 
     /**
      * @inheritdoc
@@ -33,17 +33,5 @@ class RefreshToken extends GrantTypeBase implements RefreshTokenGrantTypeInterfa
     public function hasRefreshToken()
     {
         return !empty($this->config['refresh_token']);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getToken()
-    {
-        if (!$this->hasRefreshToken()) {
-            throw new \RuntimeException("Refresh token not available");
-        }
-
-        return parent::getToken();
     }
 }
