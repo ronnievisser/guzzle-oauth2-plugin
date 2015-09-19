@@ -4,9 +4,11 @@ namespace CommerceGuys\Guzzle\Oauth2;
 
 use CommerceGuys\Guzzle\Oauth2\GrantType\GrantTypeInterface;
 use CommerceGuys\Guzzle\Oauth2\GrantType\RefreshTokenGrantTypeInterface;
+use CommerceGuys\Guzzle\Oauth2\Middleware\RetryModifyRequestMiddleware;
 use GuzzleHttp\Client;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
+use GuzzleHttp\Psr7;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
@@ -43,61 +45,50 @@ class Oauth2Client extends Client{
         $handler->push(Middleware::mapRequest(function (RequestInterface $request) {
             if ($this->getConfig('auth') == 'oauth2') {
                 $token = $this->getAccessToken();
+
                 if ($token !== null) {
-                    return $request->withHeader('Authorization', 'Bearer ' . $token->getToken());
+                    var_dump("HEADER_ADDED");
+                    var_dump($token);
+                    $request = $request->withHeader('Authorization', 'Bearer ' . $token->getToken());
+var_dump($request);
+                    return $request;
                 }
             }
             return $request;
-        }));
+        }),'add_oauth_header');
 
-        //figure out how to re-run request and return new response
-        //$handler->push($this->intercept_bad_token_response());
-        $handler->push(Middleware::retry(function ($retries, RequestInterface $request, ResponseInterface $response=null, $error=null){
-            if($retries > 0){
-                return false;
-            }
-            if($response instanceof ResponseInterface){
-                if($response->getStatusCode() == 401){
-                    $this->acquireAccessToken();
-                    return true;
+        $handler->before('add_oauth_header',$this->retry_modify_request(function ($retries, RequestInterface &$request, ResponseInterface $response=null, $error=null){
+                if($retries > 0){
+                    return false;
                 }
-            }
-            return false;
-        }));
+                if($response instanceof ResponseInterface){
+                    if($response->getStatusCode() == 401){
+                        $token = $this->acquireAccessToken();
+                        $this->setAccessToken($token, 'Bearer');
+
+                        $modify['set_headers']['Authorization'] = 'Bearer ' . $token->getToken();
+                        $request = Psr7\modify_request($request, $modify);
+
+                        return true;
+                    }
+                }
+                return false;
+            }));
 
         return $handler;
     }
 
     /**
-     * Retry Access Token call
+     * Retry Call after updating access token
      */
-    /*
-    function intercept_bad_token_response()
-    {
-        return function (callable $handler) {
-            return function (
-                RequestInterface $request,
-                array $options
-            ) use ($handler) {
-                $promise = $handler($request, $options);
-                return $promise->then(
-                    function (ResponseInterface $response) use ($request) {
-                        if ($response && 401 == $response->getStatusCode()) {
-                            if ($this->getConfig('auth') == 'oauth2' && !$this->getConfig('retried')) {
-                                if ($token = $this->acquireAccessToken()) {
-                                    $this->accessToken = $token;
-                                    $this->setConfig('retried', true);
-                                    return $this->send($request);
-                                }
-                            }
-                        }
-                        return $response;
-                    }
-                );
-            };
+
+    function retry_modify_request(callable $decider, callable $delay = null){
+        return function (callable $handler) use ($decider, $delay) {
+            return new RetryModifyRequestMiddleware($decider, $handler, $delay);
         };
     }
-*/
+
+
     /**
      * Get a new access token.
      *
@@ -108,12 +99,8 @@ class Oauth2Client extends Client{
         $accessToken = null;
 
         if ($this->refreshTokenGrantType) {
-            // Get an access token using the stored refresh token.
-            if ($this->refreshToken) {
-                $this->refreshTokenGrantType->setRefreshToken($this->getToken($this->refreshToken));
-            }
             if ($this->refreshTokenGrantType->hasRefreshToken()) {
-                $accessToken = $this->refreshTokenGrantType->getToken();
+                $accessToken = $this->getToken($this->refreshTokenGrantType);
             }
         }
 
@@ -192,6 +179,7 @@ class Oauth2Client extends Client{
 
     public function getToken($grantType)
     {
+        $client = new Client();
         $config = $grantType->config;
 
         $form_params = $config;
@@ -212,12 +200,13 @@ class Oauth2Client extends Client{
         }
 
         try {
-            $response = $this->post($config['token_url'], $requestOptions);
+            $response = $client->post($config['token_url'], $requestOptions);
             $data = json_decode((string)$response->getBody(), true);
         }catch(ClientException $e){
-            /*var_dump($e->getRequest());
+            var_dump($e->getRequest());
             var_dump($e->getResponse());
-            var_dump($e->getResponse()->getBody());*/
+            var_dump($e->getResponse()->getBody());
+            die;
         }
 
         return new AccessToken($data['access_token'], $data['token_type'], $data);
