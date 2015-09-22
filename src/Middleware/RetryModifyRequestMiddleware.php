@@ -19,21 +19,24 @@ class RetryModifyRequestMiddleware
     private $decider;
 
     /**
-     * @param callable $decider     Function that accepts the number of retries,
-     *                              a request, [response], and [exception] and
-     *                              returns true if the request is to be
-     *                              retried.
-     * @param callable $nextHandler Next handler to invoke.
-     * @param callable $delay       Function that accepts the number of retries
-     *                              and returns the number of milliseconds to
-     *                              delay.
+     * @param callable $decider             Function that accepts the number of retries,
+     *                                      a request, [response], and [exception] and
+     *                                      returns true if the request is to be
+     *                                      retried.
+     * @param callable $requestModifier     Function to modify request
+     * @param callable $nextHandler         Next handler to invoke.
+     * @param callable $delay               Function that accepts the number of retries
+     *                                      and returns the number of milliseconds to
+     *                                      delay.
      */
     public function __construct(
         callable $decider,
+        callable $requestModifier,
         callable $nextHandler,
         callable $delay = null
     ) {
         $this->decider = $decider;
+        $this->requestModifier = $requestModifier;
         $this->nextHandler = $nextHandler;
         $this->delay = $delay ?: __CLASS__ . '::exponentialDelay';
     }
@@ -56,7 +59,7 @@ class RetryModifyRequestMiddleware
      *
      * @return PromiseInterface
      */
-    public function __invoke(RequestInterface &$request, array $options)
+    public function __invoke(RequestInterface $request, array $options)
     {
         if (!isset($options['retries'])) {
             $options['retries'] = 0;
@@ -70,43 +73,57 @@ class RetryModifyRequestMiddleware
             );
     }
 
-    private function onFulfilled(RequestInterface &$req, array $options)
+    private function onFulfilled(RequestInterface $req, array $options)
     {
         return function ($value) use ($req, $options) {
             if (!call_user_func_array(
                 $this->decider,
                 array(
                     $options['retries'],
-                    &$req,
+                    $req,
                     $value,
                     null
                 )
             )) {
                 return $value;
             }
+            $req = call_user_func_array(
+                $this->requestModifier,
+                array(
+                    $req,
+                    $value,
+                )
+            );
             return $this->doRetry($req, $options);
         };
     }
 
-    private function onRejected(RequestInterface &$req, array $options)
+    private function onRejected(RequestInterface $req, array $options)
     {
         return function ($reason) use ($req, $options) {
             if (!call_user_func(
                 $this->decider,
                 array(
                     $options['retries'],
-                    &$req,
+                    $req,
                     null,
                     $reason
                 )
             )) {
                 return new RejectedPromise($reason);
             }
+            $req = call_user_func_array(
+                $this->requestModifier,
+                array(
+                    $req,
+                    null
+                )
+            );
             return $this->doRetry($req, $options);
         };
     }
 
-    private function doRetry(RequestInterface &$request, array $options)
+    private function doRetry(RequestInterface $request, array $options)
     {
         $options['delay'] = call_user_func($this->delay, ++$options['retries']);
 

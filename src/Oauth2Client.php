@@ -57,23 +57,30 @@ var_dump($request);
             return $request;
         }),'add_oauth_header');
 
-        $handler->before('add_oauth_header',$this->retry_modify_request(function ($retries, RequestInterface &$request, ResponseInterface $response=null, $error=null){
+        $handler->before('add_oauth_header',$this->retry_modify_request(function ($retries, RequestInterface $request, ResponseInterface $response=null, $error=null){
                 if($retries > 0){
                     return false;
                 }
+                if($response instanceof ResponseInterface){
+                    if($response->getStatusCode() == 401){
+                        return true;
+                    }
+                }
+                return false;
+            },
+            function(RequestInterface $request, ResponseInterface $response){
                 if($response instanceof ResponseInterface){
                     if($response->getStatusCode() == 401){
                         $token = $this->acquireAccessToken();
                         $this->setAccessToken($token, 'Bearer');
 
                         $modify['set_headers']['Authorization'] = 'Bearer ' . $token->getToken();
-                        $request = Psr7\modify_request($request, $modify);
-
-                        return true;
+                        return Psr7\modify_request($request, $modify);
                     }
                 }
-                return false;
-            }));
+                return $request;
+            }
+        ));
 
         return $handler;
     }
@@ -82,9 +89,9 @@ var_dump($request);
      * Retry Call after updating access token
      */
 
-    function retry_modify_request(callable $decider, callable $delay = null){
-        return function (callable $handler) use ($decider, $delay) {
-            return new RetryModifyRequestMiddleware($decider, $handler, $delay);
+    function retry_modify_request(callable $decider, callable $requestModifier, callable $delay = null){
+        return function (callable $handler) use ($decider, $requestModifier,  $delay) {
+            return new RetryModifyRequestMiddleware($decider, $requestModifier, $handler, $delay);
         };
     }
 
