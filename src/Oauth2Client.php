@@ -47,10 +47,7 @@ class Oauth2Client extends Client{
                 $token = $this->getAccessToken();
 
                 if ($token !== null) {
-                    var_dump("HEADER_ADDED");
-                    var_dump($token);
                     $request = $request->withHeader('Authorization', 'Bearer ' . $token->getToken());
-var_dump($request);
                     return $request;
                 }
             }
@@ -206,15 +203,8 @@ var_dump($request);
             $requestOptions = array_merge_recursive($requestOptions, $additionalOptions);
         }
 
-        try {
-            $response = $client->post($config['token_url'], $requestOptions);
-            $data = json_decode((string)$response->getBody(), true);
-        }catch(ClientException $e){
-            var_dump($e->getRequest());
-            var_dump($e->getResponse());
-            var_dump($e->getResponse()->getBody());
-            die;
-        }
+        $response = $client->post($config['token_url'], $requestOptions);
+        $data = json_decode((string)$response->getBody(), true);
 
         return new AccessToken($data['access_token'], $data['token_type'], $data);
     }
