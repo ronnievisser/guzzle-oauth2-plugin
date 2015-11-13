@@ -16,7 +16,6 @@ class GrantTypeBase implements GrantTypeInterface
     public $grantType = '';
 
     /**
-     * @param ClientInterface $client
      * @param array $config
      */
     public function __construct(array $config = [])
