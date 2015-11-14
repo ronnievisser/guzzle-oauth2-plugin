@@ -9,7 +9,7 @@ namespace CommerceGuys\Guzzle\Oauth2\GrantType;
  */
 class PasswordCredentials extends GrantTypeBase
 {
-    protected $grantType = 'password';
+    public $grantType = 'password';
 
     /**
      * @inheritdoc
