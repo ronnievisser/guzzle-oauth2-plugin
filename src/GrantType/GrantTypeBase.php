@@ -35,6 +35,7 @@ class GrantTypeBase implements GrantTypeInterface
             'scope' => '',
             'token_url' => 'oauth2/token',
             'auth_location' => 'headers',
+            'body_type' => 'form_params',
         ];
     }
 

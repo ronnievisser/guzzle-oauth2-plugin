@@ -5,6 +5,8 @@ namespace CommerceGuys\Guzzle\Oauth2;
 use CommerceGuys\Guzzle\Oauth2\GrantType\GrantTypeInterface;
 use CommerceGuys\Guzzle\Oauth2\GrantType\RefreshTokenGrantTypeInterface;
 use CommerceGuys\Guzzle\Oauth2\Middleware\RetryModifyRequestMiddleware;
+use CommerceGuys\Guzzle\Oauth2\Exceptions\InvalidGrantException;
+use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
@@ -188,7 +190,7 @@ class Oauth2Client extends Client{
 
         $form_params = $config;
         $form_params['grant_type'] = $grantType->grantType;
-        unset($form_params['token_url'], $form_params['auth_location']);
+        unset($form_params['token_url'], $form_params['auth_location'], $form_params['body_type']);
 
         $requestOptions = [];
 
@@ -197,16 +199,30 @@ class Oauth2Client extends Client{
             unset($form_params['client_id'], $form_params['client_secret']);
         }
 
-        $requestOptions['form_params'] = $form_params;
+        if($config['body_type'] == 'json'){
+            $requestOptions['json'] = $form_params;
+        }else{
+            $requestOptions['form_params'] = $form_params;
+        }
 
         if ($additionalOptions = $grantType->getAdditionalOptions()) {
             $requestOptions = array_merge_recursive($requestOptions, $additionalOptions);
         }
-
+        $requestOptions['http_errors'] = false;
         $response = $client->post($config['token_url'], $requestOptions);
         $data = json_decode((string)$response->getBody(), true);
 
-        return new AccessToken($data['access_token'], $data['token_type'], $data);
+        if(isset($data['access_token']) && isset($data['token_type'])) {
+            return new AccessToken($data['access_token'], $data['token_type'], $data);
+        }elseif(isset($data['error'])){
+            switch($data['error']){
+                case 'invalid_grant': throw(new InvalidGrantException('invalid_grant', $data['status_code']));
+                    break;
+                default:
+                    throw(new Exception($data['error'], $data['status_code']));
+                    break;
+            }
+        }
     }
 
     public function setGrantType(GrantTypeInterface $grantType){
