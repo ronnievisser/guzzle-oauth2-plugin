@@ -219,7 +219,7 @@ class Oauth2Client extends Client{
                 case 'invalid_grant': throw(new InvalidGrantException('invalid_grant', $data['status_code']));
                     break;
                 default:
-                    throw(new Exception($data['error'], $data['status_code']));
+                    throw(new Exception($data['error'], (isset($data['status_code']))?$data['status_code']:0));
                     break;
             }
         }
