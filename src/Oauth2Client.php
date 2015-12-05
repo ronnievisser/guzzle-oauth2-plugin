@@ -216,7 +216,7 @@ class Oauth2Client extends Client{
             return new AccessToken($data['access_token'], $data['token_type'], $data);
         }elseif(isset($data['error'])){
             switch($data['error']){
-                case 'invalid_grant': throw(new InvalidGrantException('invalid_grant', $data['status_code']));
+                case 'invalid_grant': throw(new InvalidGrantException('invalid_grant', (isset($data['status_code']))?$data['status_code']:0));
                     break;
                 default:
                     throw(new Exception($data['error'], (isset($data['status_code']))?$data['status_code']:0));
