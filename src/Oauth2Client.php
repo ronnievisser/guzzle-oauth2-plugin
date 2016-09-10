@@ -27,9 +27,12 @@ class Oauth2Client extends Client{
     protected $refreshTokenGrantType;
 
 
-    public function __construct($config=[]){
-
-        $config['handler'] = $this->returnHandlers();
+    public function __construct($config=[])
+    {
+        //allow a different handler stack to completely override the default stack for oauth
+        if(!isset($config['handler'])) {
+            $config['handler'] = $this->returnHandlers();
+        }
 
         parent::__construct($config);
     }
@@ -39,12 +42,14 @@ class Oauth2Client extends Client{
      *
      * @return HandlerStack|null
      */
-    protected function returnHandlers(){
+    protected function returnHandlers()
+    {
         // Create a handler stack that has all of the default middlewares attached
         $handler = HandlerStack::create();
 
         //Add the Authorization header to requests.
-        $handler->push(Middleware::mapRequest(function (RequestInterface $request) {
+        $handler->push(Middleware::mapRequest(function (RequestInterface $request)
+        {
             if ($this->getConfig('auth') == 'oauth2') {
                 $token = $this->getAccessToken();
 
@@ -56,7 +61,8 @@ class Oauth2Client extends Client{
             return $request;
         }),'add_oauth_header');
 
-        $handler->before('add_oauth_header',$this->retry_modify_request(function ($retries, RequestInterface $request, ResponseInterface $response=null, $error=null){
+        $handler->before('add_oauth_header',$this->retry_modify_request(function ($retries, RequestInterface $request, ResponseInterface $response=null, $error=null)
+        {
                 if($retries > 0){
                     return false;
                 }
@@ -67,7 +73,8 @@ class Oauth2Client extends Client{
                 }
                 return false;
             },
-            function(RequestInterface $request, ResponseInterface $response){
+            function(RequestInterface $request, ResponseInterface $response)
+            {
                 if($response instanceof ResponseInterface){
                     if($response->getStatusCode() == 401){
                         $token = $this->acquireAccessToken();
@@ -88,8 +95,10 @@ class Oauth2Client extends Client{
      * Retry Call after updating access token
      */
 
-    function retry_modify_request(callable $decider, callable $requestModifier, callable $delay = null){
-        return function (callable $handler) use ($decider, $requestModifier,  $delay) {
+    function retry_modify_request(callable $decider, callable $requestModifier, callable $delay = null)
+    {
+        return function (callable $handler) use ($decider, $requestModifier,  $delay)
+        {
             return new RetryModifyRequestMiddleware($decider, $requestModifier, $handler, $delay);
         };
     }
