@@ -26,9 +26,13 @@ class Oauth2Client extends Client{
     /** @var RefreshTokenGrantTypeInterface */
     protected $refreshTokenGrantType;
 
+    protected $config;
+
 
     public function __construct($config=[])
     {
+        $this->config = $config;
+
         //allow a different handler stack to completely override the default stack for oauth
         if(!isset($config['handler'])) {
             $config['handler'] = $this->returnHandlers();
@@ -194,7 +198,7 @@ class Oauth2Client extends Client{
 
     public function getToken($grantType)
     {
-        $client = new Client();
+        $client = new Client($this->config);
         $config = $grantType->config;
 
         $form_params = $config;
