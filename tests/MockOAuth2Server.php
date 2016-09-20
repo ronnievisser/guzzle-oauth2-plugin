@@ -13,7 +13,7 @@ class MockOAuth2Server
     {
         $defaults = [
             'tokenExpiresIn' => 3600,
-            'tokenPath' => '/oauth2/token',
+            'tokenPath'      => '/oauth2/token',
         ];
         $this->options = $options + $defaults;
     }
@@ -41,7 +41,7 @@ class MockOAuth2Server
             $response = $this->mockApiCall($request);
         }
         if (!isset($response)) {
-            throw new \RuntimeException("Mock server cannot handle given request URI");
+            throw new \RuntimeException('Mock server cannot handle given request URI');
         }
 
         return $response;
@@ -81,7 +81,7 @@ class MockOAuth2Server
     {
         $token = [
             'access_token' => 'testToken',
-            'token_type' => 'bearer',
+            'token_type'   => 'bearer',
         ];
 
         if (isset($this->options['tokenExpires'])) {
@@ -92,7 +92,7 @@ class MockOAuth2Server
 
         return [
             'status' => 200,
-            'body' => json_encode($token),
+            'body'   => json_encode($token),
         ];
     }
 
@@ -100,7 +100,7 @@ class MockOAuth2Server
      * @param array $requestBody
      *
      * @return array
-     *   The response as expected by the MockHandler.
+     *               The response as expected by the MockHandler.
      */
     protected function grantTypePassword(array $requestBody)
     {
@@ -116,7 +116,7 @@ class MockOAuth2Server
      * @param array $request
      *
      * @return array
-     *   The response as expected by the MockHandler.
+     *               The response as expected by the MockHandler.
      */
     protected function grantTypeClientCredentials(array $request)
     {
