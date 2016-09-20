@@ -2,13 +2,8 @@
 
 namespace CommerceGuys\Guzzle\Oauth2\GrantType;
 
-use CommerceGuys\Guzzle\Oauth2\AccessToken;
-use GuzzleHttp\ClientInterface;
-use GuzzleHttp\Exception\ClientException;
-
 class GrantTypeBase implements GrantTypeInterface
 {
-
     /** @var array Configuration settings */
     public $config;
 
@@ -32,10 +27,10 @@ class GrantTypeBase implements GrantTypeInterface
     {
         return [
             'client_secret' => '',
-            'scope' => '',
-            'token_url' => 'oauth2/token',
+            'scope'         => '',
+            'token_url'     => 'oauth2/token',
             'auth_location' => 'headers',
-            'body_type' => 'form_params',
+            'body_type'     => 'form_params',
         ];
     }
 
@@ -56,6 +51,5 @@ class GrantTypeBase implements GrantTypeInterface
      */
     public function getAdditionalOptions()
     {
-        return null;
     }
 }

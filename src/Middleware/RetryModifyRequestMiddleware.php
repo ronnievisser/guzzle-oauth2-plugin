@@ -1,9 +1,9 @@
 <?php
+
 namespace CommerceGuys\Guzzle\Oauth2\Middleware;
 
 use GuzzleHttp\Promise\PromiseInterface;
 use GuzzleHttp\Promise\RejectedPromise;
-use GuzzleHttp\Psr7;
 use Psr\Http\Message\RequestInterface;
 
 /**
@@ -12,22 +12,22 @@ use Psr\Http\Message\RequestInterface;
  */
 class RetryModifyRequestMiddleware
 {
-    /** @var callable  */
+    /** @var callable */
     private $nextHandler;
 
     /** @var callable */
     private $decider;
 
     /**
-     * @param callable $decider             Function that accepts the number of retries,
-     *                                      a request, [response], and [exception] and
-     *                                      returns true if the request is to be
-     *                                      retried.
-     * @param callable $requestModifier     Function to modify request
-     * @param callable $nextHandler         Next handler to invoke.
-     * @param callable $delay               Function that accepts the number of retries
-     *                                      and returns the number of milliseconds to
-     *                                      delay.
+     * @param callable $decider         Function that accepts the number of retries,
+     *                                  a request, [response], and [exception] and
+     *                                  returns true if the request is to be
+     *                                  retried.
+     * @param callable $requestModifier Function to modify request
+     * @param callable $nextHandler     Next handler to invoke.
+     * @param callable $delay           Function that accepts the number of retries
+     *                                  and returns the number of milliseconds to
+     *                                  delay.
      */
     public function __construct(
         callable $decider,
@@ -38,7 +38,7 @@ class RetryModifyRequestMiddleware
         $this->decider = $decider;
         $this->requestModifier = $requestModifier;
         $this->nextHandler = $nextHandler;
-        $this->delay = $delay ?: __CLASS__ . '::exponentialDelay';
+        $this->delay = $delay ?: __CLASS__.'::exponentialDelay';
     }
 
     /**
@@ -66,6 +66,7 @@ class RetryModifyRequestMiddleware
         }
 
         $fn = $this->nextHandler;
+
         return $fn($request, $options)
             ->then(
                 $this->onFulfilled($request, $options),
@@ -78,22 +79,23 @@ class RetryModifyRequestMiddleware
         return function ($value) use ($req, $options) {
             if (!call_user_func_array(
                 $this->decider,
-                array(
+                [
                     $options['retries'],
                     $req,
                     $value,
-                    null
-                )
+                    null,
+                ]
             )) {
                 return $value;
             }
             $req = call_user_func_array(
                 $this->requestModifier,
-                array(
+                [
                     $req,
                     $value,
-                )
+                ]
             );
+
             return $this->doRetry($req, $options);
         };
     }
@@ -103,22 +105,23 @@ class RetryModifyRequestMiddleware
         return function ($reason) use ($req, $options) {
             if (!call_user_func(
                 $this->decider,
-                array(
+                [
                     $options['retries'],
                     $req,
                     null,
-                    $reason
-                )
+                    $reason,
+                ]
             )) {
                 return new RejectedPromise($reason);
             }
             $req = call_user_func_array(
                 $this->requestModifier,
-                array(
+                [
                     $req,
-                    null
-                )
+                    null,
+                ]
             );
+
             return $this->doRetry($req, $options);
         };
     }

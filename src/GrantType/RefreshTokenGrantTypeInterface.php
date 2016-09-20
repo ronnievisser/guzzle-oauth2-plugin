@@ -4,7 +4,6 @@ namespace CommerceGuys\Guzzle\Oauth2\GrantType;
 
 interface RefreshTokenGrantTypeInterface
 {
-
     /**
      * @param string $refreshToken
      */

@@ -12,7 +12,7 @@ class RefreshToken extends GrantTypeBase implements RefreshTokenGrantTypeInterfa
     public $grantType = 'refresh_token';
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function getDefaults()
     {
@@ -20,7 +20,7 @@ class RefreshToken extends GrantTypeBase implements RefreshTokenGrantTypeInterfa
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function setRefreshToken($refreshToken)
     {
@@ -28,7 +28,7 @@ class RefreshToken extends GrantTypeBase implements RefreshTokenGrantTypeInterfa
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function hasRefreshToken()
     {

@@ -9,10 +9,10 @@ class AccessTokenTest extends \PHPUnit_Framework_TestCase
     public function testAccessTokenGetters()
     {
         $data = [
-            'access_token' => 'testToken',
-            'token_type' => 'bearer',
-            'expires_in' => 300,
-            'scope' => 'profile administration',
+            'access_token'  => 'testToken',
+            'token_type'    => 'bearer',
+            'expires_in'    => 300,
+            'scope'         => 'profile administration',
             'refresh_token' => 'testRefreshToken',
         ];
         $token = new AccessToken($data['access_token'], $data['token_type'], $data);

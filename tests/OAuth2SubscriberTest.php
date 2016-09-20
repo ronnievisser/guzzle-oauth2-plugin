@@ -12,13 +12,13 @@ class OAuth2SubscriberTest extends TestBase
     public function testSubscriberRetriesRequestOn401()
     {
         $subscriber = new Oauth2Subscriber(new ClientCredentials($this->getClient(), [
-            'client_id' => 'test',
+            'client_id'     => 'test',
             'client_secret' => 'testSecret',
         ]));
         $client = $this->getClient([
             'defaults' => [
                 'subscribers' => [$subscriber],
-                'auth' => 'oauth2',
+                'auth'        => 'oauth2',
             ],
         ]);
         $response = $client->get('api/collection');
@@ -28,7 +28,7 @@ class OAuth2SubscriberTest extends TestBase
     public function testSubscriberUsesRefreshToken()
     {
         $credentials = [
-            'client_id' => 'test',
+            'client_id'     => 'test',
             'client_secret' => 'testSecret',
         ];
 
@@ -45,7 +45,7 @@ class OAuth2SubscriberTest extends TestBase
         $client = $this->getClient([
             'defaults' => [
                 'subscribers' => [$subscriber],
-                'auth' => 'oauth2',
+                'auth'        => 'oauth2',
             ],
         ]);
 
@@ -67,8 +67,8 @@ class OAuth2SubscriberTest extends TestBase
         $client = $this->getClient([
             'defaults' => [
                 'subscribers' => [$subscriber],
-                'auth' => 'oauth2',
-                'exceptions' => false,
+                'auth'        => 'oauth2',
+                'exceptions'  => false,
             ],
         ]);
 
