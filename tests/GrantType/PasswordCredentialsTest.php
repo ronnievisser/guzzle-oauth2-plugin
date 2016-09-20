@@ -17,8 +17,8 @@ class PasswordCredentialsTest extends TestBase
     {
         $grantType = new PasswordCredentials($this->getClient(), [
             'client_id' => 'testClient',
-            'username' => 'validUsername',
-            'password' => 'validPassword',
+            'username'  => 'validUsername',
+            'password'  => 'validPassword',
         ]);
         $token = $grantType->getToken();
         $this->assertNotEmpty($token->getToken());

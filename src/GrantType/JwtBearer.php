@@ -3,12 +3,12 @@
 namespace CommerceGuys\Guzzle\Oauth2\GrantType;
 
 use GuzzleHttp\ClientInterface;
+use InvalidArgumentException;
 use JWT;
 use SplFileObject;
-use InvalidArgumentException;
 
 /**
- * JSON Web Token (JWT) Bearer Token Profiles for OAuth 2.0
+ * JSON Web Token (JWT) Bearer Token Profiles for OAuth 2.0.
  *
  * @link http://tools.ietf.org/html/draft-jones-oauth-jwt-bearer-04
  */
@@ -30,7 +30,7 @@ class JwtBearer extends GrantTypeBase
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function getRequired()
     {
@@ -38,19 +38,19 @@ class JwtBearer extends GrantTypeBase
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function getAdditionalOptions()
     {
         return [
             'body' => [
-                'assertion' => $this->computeJwt()
-            ]
+                'assertion' => $this->computeJwt(),
+            ],
         ];
     }
 
     /**
-     * Compute JWT, signing with provided private key
+     * Compute JWT, signing with provided private key.
      */
     protected function computeJwt()
     {
@@ -58,14 +58,14 @@ class JwtBearer extends GrantTypeBase
             'iss' => $this->config->get('client_id'),
             'aud' => sprintf('%s/%s', rtrim($this->client->getBaseUrl(), '/'), ltrim($this->config->get('token_url'), '/')),
             'exp' => time() + 60 * 60,
-            'iat' => time()
+            'iat' => time(),
         ];
 
         return JWT::encode($payload, $this->readPrivateKey($this->config->get('private_key')), 'RS256');
     }
 
     /**
-     * Read private key
+     * Read private key.
      *
      * @param SplFileObject $privateKey
      *
@@ -77,6 +77,7 @@ class JwtBearer extends GrantTypeBase
         while (!$privateKey->eof()) {
             $key .= $privateKey->fgets();
         }
+
         return $key;
     }
 }

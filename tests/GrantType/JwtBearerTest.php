@@ -18,16 +18,16 @@ class JwtBearerTest extends TestBase
     {
         $this->setExpectedException('\\InvalidArgumentException', 'private_key needs to be instance of SplFileObject');
         $grantType = new JwtBearer($this->getClient(), [
-            'client_id' => 'testClient',
-            'private_key' => 'INVALID'
+            'client_id'   => 'testClient',
+            'private_key' => 'INVALID',
         ]);
     }
 
     public function testValidRequestGetsToken()
     {
         $grantType = new JwtBearer($this->getClient(), [
-            'client_id' => 'testClient',
-            'private_key' => new SplFileObject(__DIR__ . '/../private.key')
+            'client_id'   => 'testClient',
+            'private_key' => new SplFileObject(__DIR__.'/../private.key'),
         ]);
         $token = $grantType->getToken();
         $this->assertNotEmpty($token->getToken());

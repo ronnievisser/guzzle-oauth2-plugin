@@ -12,7 +12,7 @@ class AuthorizationCode extends GrantTypeBase
     public $grantType = 'authorization_code';
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function getDefaults()
     {
@@ -20,7 +20,7 @@ class AuthorizationCode extends GrantTypeBase
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function getRequired()
     {

@@ -2,11 +2,11 @@
 
 namespace CommerceGuys\Guzzle\Oauth2;
 
+use CommerceGuys\Guzzle\Oauth2\Exceptions\InvalidGrantException;
 use CommerceGuys\Guzzle\Oauth2\GrantType\GrantTypeBase;
 use CommerceGuys\Guzzle\Oauth2\GrantType\GrantTypeInterface;
 use CommerceGuys\Guzzle\Oauth2\GrantType\RefreshTokenGrantTypeInterface;
 use CommerceGuys\Guzzle\Oauth2\Middleware\RetryModifyRequestMiddleware;
-use CommerceGuys\Guzzle\Oauth2\Exceptions\InvalidGrantException;
 use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\HandlerStack;
@@ -15,8 +15,8 @@ use GuzzleHttp\Psr7;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
-class Oauth2Client extends Client{
-
+class Oauth2Client extends Client
+{
     /** @var AccessToken|null */
     protected $accessToken;
     /** @var AccessToken|null */
@@ -29,13 +29,12 @@ class Oauth2Client extends Client{
 
     protected $config;
 
-
-    public function __construct($config=[])
+    public function __construct($config = [])
     {
         $this->config = $config;
 
         //allow a different handler stack to completely override the default stack for oauth
-        if(!isset($config['handler'])) {
+        if (!isset($config['handler'])) {
             $config['handler'] = $this->returnHandlers();
         }
 
@@ -43,7 +42,7 @@ class Oauth2Client extends Client{
     }
 
     /**
-     * Set the middleware handlers for all requests using Oauth2
+     * Set the middleware handlers for all requests using Oauth2.
      *
      * @return HandlerStack|null
      */
@@ -53,42 +52,44 @@ class Oauth2Client extends Client{
         $handler = HandlerStack::create();
 
         //Add the Authorization header to requests.
-        $handler->push(Middleware::mapRequest(function (RequestInterface $request)
-        {
+        $handler->push(Middleware::mapRequest(function (RequestInterface $request) {
             if ($this->getConfig('auth') == 'oauth2') {
                 $token = $this->getAccessToken();
 
                 if ($token !== null) {
-                    $request = $request->withHeader('Authorization', 'Bearer ' . $token->getToken());
+                    $request = $request->withHeader('Authorization', 'Bearer '.$token->getToken());
+
                     return $request;
                 }
             }
-            return $request;
-        }),'add_oauth_header');
 
-        $handler->before('add_oauth_header',$this->retry_modify_request(function ($retries, RequestInterface $request, ResponseInterface $response=null, $error=null)
-        {
-                if($retries > 0){
-                    return false;
-                }
-                if($response instanceof ResponseInterface){
-                    if($response->getStatusCode() == 401){
-                        return true;
-                    }
-                }
+            return $request;
+        }), 'add_oauth_header');
+
+        $handler->before('add_oauth_header', $this->retry_modify_request(function ($retries, RequestInterface $request, ResponseInterface $response = null, $error = null) {
+            if ($retries > 0) {
                 return false;
-            },
-            function(RequestInterface $request, ResponseInterface $response)
-            {
-                if($response instanceof ResponseInterface){
-                    if($response->getStatusCode() == 401){
+            }
+            if ($response instanceof ResponseInterface) {
+                if ($response->getStatusCode() == 401) {
+                    return true;
+                }
+            }
+
+            return false;
+        },
+            function (RequestInterface $request, ResponseInterface $response) {
+                if ($response instanceof ResponseInterface) {
+                    if ($response->getStatusCode() == 401) {
                         $token = $this->acquireAccessToken();
                         $this->setAccessToken($token, 'Bearer');
 
-                        $modify['set_headers']['Authorization'] = 'Bearer ' . $token->getToken();
+                        $modify['set_headers']['Authorization'] = 'Bearer '.$token->getToken();
+
                         return Psr7\modify_request($request, $modify);
                     }
                 }
+
                 return $request;
             }
         ));
@@ -97,17 +98,14 @@ class Oauth2Client extends Client{
     }
 
     /**
-     * Retry Call after updating access token
+     * Retry Call after updating access token.
      */
-
-    function retry_modify_request(callable $decider, callable $requestModifier, callable $delay = null)
+    public function retry_modify_request(callable $decider, callable $requestModifier, callable $delay = null)
     {
-        return function (callable $handler) use ($decider, $requestModifier,  $delay)
-        {
+        return function (callable $handler) use ($decider, $requestModifier, $delay) {
             return new RetryModifyRequestMiddleware($decider, $requestModifier, $handler, $delay);
         };
     }
-
 
     /**
      * Get a new access token.
@@ -213,9 +211,9 @@ class Oauth2Client extends Client{
             unset($form_params['client_id'], $form_params['client_secret']);
         }
 
-        if($config['body_type'] == 'json'){
+        if ($config['body_type'] == 'json') {
             $requestOptions['json'] = $form_params;
-        }else{
+        } else {
             $requestOptions['form_params'] = $form_params;
         }
 
@@ -224,26 +222,28 @@ class Oauth2Client extends Client{
         }
         $requestOptions['http_errors'] = false;
         $response = $client->post($config['token_url'], $requestOptions);
-        $data = json_decode((string)$response->getBody(), true);
+        $data = json_decode((string) $response->getBody(), true);
 
-        if(isset($data['access_token'])) {
-            return new AccessToken($data['access_token'], isset($data['token_type'])?$data['token_type']:'', $data);
-        }elseif(isset($data['error'])){
-            switch($data['error']){
-                case 'invalid_grant': throw(new InvalidGrantException('invalid_grant', (isset($data['status_code']))?$data['status_code']:0));
+        if (isset($data['access_token'])) {
+            return new AccessToken($data['access_token'], isset($data['token_type']) ? $data['token_type'] : '', $data);
+        } elseif (isset($data['error'])) {
+            switch ($data['error']) {
+                case 'invalid_grant': throw(new InvalidGrantException('invalid_grant', (isset($data['status_code'])) ? $data['status_code'] : 0));
                     break;
                 default:
-                    throw(new Exception($data['error'], (isset($data['status_code']))?$data['status_code']:0));
+                    throw(new Exception($data['error'], (isset($data['status_code'])) ? $data['status_code'] : 0));
                     break;
             }
         }
     }
 
-    public function setGrantType(GrantTypeInterface $grantType){
+    public function setGrantType(GrantTypeInterface $grantType)
+    {
         $this->grantType = $grantType;
     }
 
-    public function setRefreshTokenGrantType(RefreshTokenGrantTypeInterface $refreshTokenGrantType){
+    public function setRefreshTokenGrantType(RefreshTokenGrantTypeInterface $refreshTokenGrantType)
+    {
         $this->refreshTokenGrantType = $refreshTokenGrantType;
     }
 }

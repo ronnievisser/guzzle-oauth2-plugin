@@ -21,8 +21,8 @@ class AccessToken
 
     /**
      * @param string $token
-     * @param string $type The token type (from OAuth2 key 'token_type').
-     * @param array  $data Other token data.
+     * @param string $type  The token type (from OAuth2 key 'token_type').
+     * @param array  $data  Other token data.
      */
     public function __construct($token, $type, array $data = [])
     {
@@ -82,5 +82,4 @@ class AccessToken
     {
         return $this->type;
     }
-
 }

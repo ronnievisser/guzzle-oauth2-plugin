@@ -12,7 +12,7 @@ class PasswordCredentials extends GrantTypeBase
     public $grantType = 'password';
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function getRequired()
     {
