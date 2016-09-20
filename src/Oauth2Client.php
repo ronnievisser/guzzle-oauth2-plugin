@@ -199,7 +199,13 @@ class Oauth2Client extends Client{
 
     public function getToken(GrantTypeBase $grantType)
     {
-        $client = new Client();
+        $token_client_config = [];
+
+        if(isset($this->config['token_handler'])){
+            $token_client_config['handler'] = $this->config['token_handler'];
+        }
+
+        $client = new Client($token_client_config);
         $config = $grantType->config;
 
         $form_params = $config;
