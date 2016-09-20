@@ -2,6 +2,7 @@
 
 namespace CommerceGuys\Guzzle\Oauth2;
 
+use CommerceGuys\Guzzle\Oauth2\GrantType\GrantTypeBase;
 use CommerceGuys\Guzzle\Oauth2\GrantType\GrantTypeInterface;
 use CommerceGuys\Guzzle\Oauth2\GrantType\RefreshTokenGrantTypeInterface;
 use CommerceGuys\Guzzle\Oauth2\Middleware\RetryModifyRequestMiddleware;
@@ -196,9 +197,9 @@ class Oauth2Client extends Client{
         $this->refreshToken = $refreshToken;
     }
 
-    public function getToken($grantType)
+    public function getToken(GrantTypeBase $grantType)
     {
-        $client = new Client($this->config);
+        $client = new Client();
         $config = $grantType->config;
 
         $form_params = $config;
@@ -225,8 +226,8 @@ class Oauth2Client extends Client{
         $response = $client->post($config['token_url'], $requestOptions);
         $data = json_decode((string)$response->getBody(), true);
 
-        if(isset($data['access_token']) && isset($data['token_type'])) {
-            return new AccessToken($data['access_token'], $data['token_type'], $data);
+        if(isset($data['access_token'])) {
+            return new AccessToken($data['access_token'], isset($data['token_type'])?$data['token_type']:'', $data);
         }elseif(isset($data['error'])){
             switch($data['error']){
                 case 'invalid_grant': throw(new InvalidGrantException('invalid_grant', (isset($data['status_code']))?$data['status_code']:0));
