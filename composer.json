@@ -1,10 +1,10 @@
 {
-    "name": "frankkessler/guzzle-oauth2-plugin",
+    "name": "ronnievisser/guzzle-oauth2-plugin",
     "description": "An OAuth2 plugin (subscriber) for Guzzle",
     "license": "MIT",
     "require": {
         "guzzlehttp/guzzle": "~6.0",
-        "firebase/php-jwt": "~2.0"
+        "firebase/php-jwt": "~4.0"
     },
     "autoload": {
         "psr-4": {
